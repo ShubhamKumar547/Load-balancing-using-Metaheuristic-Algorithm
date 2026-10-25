@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSO Load Balancer Comparative Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f4f6fa;
+            color: #202938;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        header {
+            padding: 30px 20px;
+            text-align: center;
+            background: #182338;
+            color: white;
+        }
+
+        header h1 { margin: 0 0 10px; }
+        header p { margin: 0; color: #d3dceb; }
+
+        main {
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 20px 40px;
+        }
+
+        .stats-grid, .charts-grid, .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .panel, .stat-card, .scenario-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(20, 30, 50, 0.06);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px;
+            color: #687386;
+            font-size: 14px;
+        }
+
+        .stat-card .value {
+            font-size: 27px;
+            font-weight: bold;
+        }
+
+        .panel h2 { margin-top: 0; font-size: 19px; }
+
+        .chart-area {
+            position: relative;
+            height: 340px;
+        }
+
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e8edf3;
+        }
+
+        th { background: #f1f4f8; }
+
+        tr:hover td { background: #f8faff; }
+
+        .note {
+            color: #596579;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .scenario-card h3 { margin-top: 0; }
+
+        footer {
+            text-align: center;
+            color: #687386;
+            padding: 15px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            main { padding: 0 10px 25px; }
+            .chart-area { height: 280px; }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Load Balancing Algorithm Comparison</h1>
+        <p>PSO vs Round Robin vs Random vs Least Loaded</p>
+    </header>
+
+    <main>
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>Scenarios analysed</h3>
+                <div class="value">3</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Valid experiment runs</h3>
+                <div class="value">360</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Skipped CSV rows</h3>
+                <div class="value">0</div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Scenario overview</h2>
+            <div class="scenario-grid"><div class="scenario-card"><h3>20C_4V</h3><p><strong>Lowest average makespan:</strong> PSO</p><p><strong>Makespan:</strong> 50.1100</p><p><strong>Algorithms with results:</strong> 4</p></div><div class="scenario-card"><h3>50C_8V</h3><p><strong>Lowest average makespan:</strong> RoundRobin</p><p><strong>Makespan:</strong> 70.2040</p><p><strong>Algorithms with results:</strong> 4</p></div><div class="scenario-card"><h3>100C_12V</h3><p><strong>Lowest average makespan:</strong> RoundRobin</p><p><strong>Makespan:</strong> 90.2080</p><p><strong>Algorithms with results:</strong> 4</p></div></div>
+        </section>
+
+        <section class="charts-grid">
+            <div class="panel">
+                <h2>Average Makespan (lower is better)</h2>
+                <div class="chart-area">
+                    <canvas id="makespanChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Average Response Time (lower is better)</h2>
+                <div class="chart-area">
+                    <canvas id="responseChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Average Load Imbalance (lower is better)</h2>
+                <div class="chart-area">
+                    <canvas id="imbalanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Average Throughput (higher is better)</h2>
+                <div class="chart-area">
+                    <canvas id="throughputChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Detailed comparative results</h2>
+            <p class="note">
+                Each row reports averages across the available runs for that
+                scenario and algorithm. A positive PSO improvement percentage
+                means PSO has a lower average makespan than the best available
+                baseline in the same scenario; a negative value means it is slower.
+            </p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Algorithm</th>
+                            <th>Runs</th>
+                            <th>Avg Makespan</th>
+                            <th>Avg Response Time</th>
+                            <th>Avg Imbalance</th>
+                            <th>Avg Throughput</th>
+                            <th>PSO Makespan Improvement</th>
+                        </tr>
+                    </thead>
+                    <tbody><tr><td>20C_4V</td><td>PSO</td><td>30</td><td>50.1100</td><td>50.1100</td><td>0.0000</td><td>0.3991</td><td>+0.00%</td></tr><tr><td>20C_4V</td><td>RoundRobin</td><td>30</td><td>50.1100</td><td>50.1100</td><td>0.0000</td><td>0.3991</td><td>—</td></tr><tr><td>20C_4V</td><td>Random</td><td>30</td><td>70.5399</td><td>56.2550</td><td>15.9629</td><td>0.2887</td><td>—</td></tr><tr><td>20C_4V</td><td>LeastLoaded</td><td>30</td><td>50.1100</td><td>50.1100</td><td>0.0000</td><td>0.3991</td><td>—</td></tr><tr><td>50C_8V</td><td>PSO</td><td>30</td><td>70.5374</td><td>63.0252</td><td>4.7667</td><td>0.7092</td><td>-0.47%</td></tr><tr><td>50C_8V</td><td>RoundRobin</td><td>30</td><td>70.2040</td><td>62.9349</td><td>4.3301</td><td>0.7122</td><td>—</td></tr><tr><td>50C_8V</td><td>Random</td><td>30</td><td>97.9074</td><td>71.4524</td><td>22.4911</td><td>0.5189</td><td>—</td></tr><tr><td>50C_8V</td><td>LeastLoaded</td><td>30</td><td>70.2040</td><td>62.9349</td><td>4.3301</td><td>0.7122</td><td>—</td></tr><tr><td>100C_12V</td><td>PSO</td><td>30</td><td>97.9415</td><td>84.4125</td><td>8.2868</td><td>1.0258</td><td>-8.57%</td></tr><tr><td>100C_12V</td><td>RoundRobin</td><td>30</td><td>90.2080</td><td>83.7453</td><td>4.7140</td><td>1.1085</td><td>—</td></tr><tr><td>100C_12V</td><td>Random</td><td>30</td><td>132.0393</td><td>92.7146</td><td>26.8709</td><td>0.7698</td><td>—</td></tr><tr><td>100C_12V</td><td>LeastLoaded</td><td>30</td><td>90.2080</td><td>83.7453</td><td>4.7140</td><td>1.1085</td><td>—</td></tr></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>How to interpret the results</h2>
+            <ul class="note">
+                <li><strong>Makespan:</strong> time when the last cloudlet finishes.</li>
+                <li><strong>Response time:</strong> interpret according to the
+                    calculation implemented in your simulation.</li>
+                <li><strong>Load imbalance:</strong> lower values indicate a more
+                    balanced distribution under the metric used by your code.</li>
+                <li><strong>Throughput:</strong> completed cloudlets per unit of
+                    simulation time.</li>
+                <li>Compare algorithms only within the same scenario and workload.</li>
+                <li>These are descriptive averages; multiple runs and variability
+                    statistics are needed for stronger research conclusions.</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        Generated from result.csv | PSO Load Balancer Research
+    </footer>
+
+    <script>
+        const labels = ["20C_4V","50C_8V","100C_12V"];
+
+        // FIX: Keep metric datasets separated for accurate comparisons.
+        const chartConfigs = [
+            {
+                id: "makespanChart",
+                datasets: [{label: "PSO",data: [50.110000,70.537400,97.941533],backgroundColor: "#3984e8",borderColor: "#3984e8",borderWidth: 1},{label: "RoundRobin",data: [50.110000,70.204000,90.208000],backgroundColor: "#ef6262",borderColor: "#ef6262",borderWidth: 1},{label: "Random",data: [70.539933,97.907367,132.039300],backgroundColor: "#e6ad38",borderColor: "#e6ad38",borderWidth: 1},{label: "LeastLoaded",data: [50.110000,70.204000,90.208000],backgroundColor: "#36a58b",borderColor: "#36a58b",borderWidth: 1}],
+                title: "Makespan"
+            },
+            {
+                id: "responseChart",
+                datasets: [{label: "PSO",data: [50.110000,63.025180,84.412499],backgroundColor: "#3984e8",borderColor: "#3984e8",borderWidth: 1},{label: "RoundRobin",data: [50.110000,62.934880,83.745280],backgroundColor: "#ef6262",borderColor: "#ef6262",borderWidth: 1},{label: "Random",data: [56.254967,71.452401,92.714582],backgroundColor: "#e6ad38",borderColor: "#e6ad38",borderWidth: 1},{label: "LeastLoaded",data: [50.110000,62.934880,83.745280],backgroundColor: "#36a58b",borderColor: "#36a58b",borderWidth: 1}],
+                title: "Average Response Time"
+            },
+            {
+                id: "imbalanceChart",
+                datasets: [{label: "PSO",data: [0.000000,4.766742,8.286843],backgroundColor: "#3984e8",borderColor: "#3984e8",borderWidth: 1},{label: "RoundRobin",data: [0.000000,4.330127,4.714045],backgroundColor: "#ef6262",borderColor: "#ef6262",borderWidth: 1},{label: "Random",data: [15.962850,22.491136,26.870852],backgroundColor: "#e6ad38",borderColor: "#e6ad38",borderWidth: 1},{label: "LeastLoaded",data: [0.000000,4.330127,4.714045],backgroundColor: "#36a58b",borderColor: "#36a58b",borderWidth: 1}],
+                title: "Load Imbalance"
+            },
+            {
+                id: "throughputChart",
+                datasets: [{label: "PSO",data: [0.399122,0.709250,1.025773],backgroundColor: "#3984e8",borderColor: "#3984e8",borderWidth: 1},{label: "RoundRobin",data: [0.399122,0.712210,1.108549],backgroundColor: "#ef6262",borderColor: "#ef6262",borderWidth: 1},{label: "Random",data: [0.288671,0.518915,0.769784],backgroundColor: "#e6ad38",borderColor: "#e6ad38",borderWidth: 1},{label: "LeastLoaded",data: [0.399122,0.712210,1.108549],backgroundColor: "#36a58b",borderColor: "#36a58b",borderWidth: 1}],
+                title: "Throughput"
+            }
+        ];
+
+        chartConfigs.forEach(config => {
+            new Chart(document.getElementById(config.id), {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: config.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: "index",
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: context => {
+                                    const value = context.parsed.y;
+                                    return context.dataset.label + ": " +
+                                        (value === null ? "No data" :
+                                            value.toFixed(4));
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Scenario"
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: config.title
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
